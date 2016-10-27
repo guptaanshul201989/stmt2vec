@@ -1,0 +1,1 @@
+The ExprData\SplitWord stores the token split by camelstyle and instrinsic style.
