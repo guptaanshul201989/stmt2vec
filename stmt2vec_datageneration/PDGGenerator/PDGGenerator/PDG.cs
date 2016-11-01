@@ -336,7 +336,8 @@ namespace PDGGenerator
             {
                 foreach (var succ in CDSuccList[ID])
                 {
-                    if (getNode(succ).type > PDGNodeType.predicate && getNode(succ).type != PDGNodeType.return_statement)
+                    var nodeType = getNode(succ).type;
+                    if(nodeType > PDGNodeType.predicate && nodeType != PDGNodeType.return_statement && nodeType != PDGNodeType.loop_break && nodeType != PDGNodeType.loop_continue)
                     {
                         result.UnionWith(getCDSuccWithoutRegion(succ));
                     }
@@ -353,7 +354,8 @@ namespace PDGGenerator
             {
                 foreach (var succ in CFSuccList[ID])
                 {
-                    if (getNode(succ).type > PDGNodeType.predicate && getNode(succ).type != PDGNodeType.return_statement)
+                    var nodeType = getNode(succ).type;
+                    if (nodeType > PDGNodeType.predicate && nodeType != PDGNodeType.return_statement && nodeType != PDGNodeType.loop_break && nodeType != PDGNodeType.loop_continue)
                         result.UnionWith(getCFSuccWithoutRegion(succ));
                     else
                         result.Add(succ);
@@ -472,7 +474,9 @@ namespace PDGGenerator
                             addCFSuccList(nodeID, child);
                             continue;
                         }
-                        if (getNode(pre).type == PDGNodeType.statement)
+                        var nodeType = getNode(pre).type;
+
+                        if (nodeType == PDGNodeType.statement || nodeType == PDGNodeType.loop_break || nodeType == PDGNodeType.loop_continue)
                         {
                             addCFPredList(child, pre);
                             addCFSuccList(pre, child);

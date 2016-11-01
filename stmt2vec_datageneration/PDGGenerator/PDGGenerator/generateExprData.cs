@@ -359,7 +359,8 @@ namespace PDGGenerator
                 writer.WriteStartArray();
                 foreach (var node in dicSort)
                 {
-                    if (node.Value.type > PDGNodeType.predicate) continue;
+                    var nodeType = node.Value.type;
+                    if (nodeType > PDGNodeType.predicate && nodeType != PDGNodeType.loop_break && nodeType != PDGNodeType.loop_continue) continue;
 
                     foreach (var e in pdg.getCDSuccWithoutRegion(node.Key))
                     {
@@ -371,7 +372,9 @@ namespace PDGGenerator
                 writer.WriteStartArray();
                 foreach (var node in dicSort)
                 {
-                    if (node.Value.type > PDGNodeType.predicate) continue;
+                    var nodeType = node.Value.type;
+                    if (nodeType > PDGNodeType.predicate && nodeType != PDGNodeType.loop_break && nodeType != PDGNodeType.loop_continue) continue;
+
                     //writer.WriteStartArray();
                     foreach (var e in pdg.getCFSuccWithoutRegion(node.Key))
                     {
@@ -384,7 +387,9 @@ namespace PDGGenerator
                 writer.WriteStartArray();
                 foreach (var node in dicSort)
                 {
-                    if (node.Value.type > PDGNodeType.predicate) continue;
+                    var nodeType = node.Value.type;
+                    if (nodeType > PDGNodeType.predicate && nodeType != PDGNodeType.loop_break && nodeType != PDGNodeType.loop_continue) continue;
+
                     //writer.WriteStartArray();
                     if (pdg.getDDSuccs(node.Key) == null) continue;
                     foreach (var e in pdg.getDDSuccs(node.Key))
@@ -457,7 +462,8 @@ namespace PDGGenerator
                 writer.WriteStartArray();
                 foreach (var node in dicSort)
                 {
-                    if (node.Value.type > PDGNodeType.predicate) continue;
+                    var nodeType = node.Value.type;
+                    if (nodeType > PDGNodeType.predicate && nodeType != PDGNodeType.loop_break && nodeType != PDGNodeType.loop_continue) continue;
 
                     foreach (var e in pdg.getCDSuccWithoutRegion(node.Key))
                     {
@@ -469,7 +475,8 @@ namespace PDGGenerator
                 writer.WriteStartArray();
                 foreach (var node in dicSort)
                 {
-                    if (node.Value.type > PDGNodeType.predicate) continue;
+                    var nodeType = node.Value.type;
+                    if (nodeType > PDGNodeType.predicate && nodeType != PDGNodeType.loop_break && nodeType != PDGNodeType.loop_continue) continue;
                     //writer.WriteStartArray();
                     foreach (var e in pdg.getCFSuccWithoutRegion(node.Key))
                     {
@@ -482,7 +489,8 @@ namespace PDGGenerator
                 writer.WriteStartArray();
                 foreach (var node in dicSort)
                 {
-                    if (node.Value.type > PDGNodeType.predicate) continue;
+                    var nodeType = node.Value.type;
+                    if (nodeType > PDGNodeType.predicate && nodeType != PDGNodeType.loop_break && nodeType != PDGNodeType.loop_continue) continue;
                     //writer.WriteStartArray();
                     if (pdg.getDDSuccs(node.Key) == null) continue;
                     foreach (var e in pdg.getDDSuccs(node.Key))
