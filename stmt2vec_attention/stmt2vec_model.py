@@ -17,11 +17,11 @@ class CopyStmtRecurrentAttentionalModel(object):
         self.__init_parameter(empirical_name_dist)
 
     def __init_parameter(self, empirical_name_dist):
-        all_name_rep = np.random.randn(self.all_voc_size, self.D) * 10 ** self.hyperparameters["log_name_rep_init_scale"]
+        all_name_rep = np.random.randn(self.all_voc_size, self.D).astype('float32') * 10 ** self.hyperparameters["log_name_rep_init_scale"]
         self.all_name_reps = theano.shared(all_name_rep, name="code_name_reps")
 
         # By convention, the last one is NONE, which is never predicted.
-        self.name_bias = theano.shared(np.log(empirical_name_dist)[:-1], name="name_bias")
+        self.name_bias = theano.shared(np.log(empirical_name_dist)[:-1].astype(np.float32), name="name_bias")
 
         # GRU, stmt2vec layers
         fgruW1,fgruW2, fgruU1, fgruU2, fgrub1,fgrub2, fgruWx, fgruUx, fgrubx =  param_init_gru( prefix='encoder',nin=128, dim=self.hyperparameters["gru1_dim"])
@@ -46,11 +46,9 @@ class CopyStmtRecurrentAttentionalModel(object):
         self.bgruUx = theano.shared(bgruUx, name="bgruUx")
         self.bgrubx = theano.shared(bgrubx, name="bgrubx")
         
-        gru_layer1_bias = np.random.randn(self.hyperparameters["gru1_dim"] *2) * 10 ** self.hyperparameters["log_layer1_init_scale"]
+        gru_layer1_bias = np.random.randn(self.hyperparameters["gru1_dim"] *2).astype('float32') * 10 ** self.hyperparameters["log_layer1_init_scale"]
         self.gru_layer1_bias = theano.shared(gru_layer1_bias, name="gru_layer1_bias")
         
-
-
         fgrurecW1,fgrurecW2, fgrurecU1, fgrurecU2, fgrurecb1,fgrurecb2, fgrurecWx, fgrurecUx, fgrurecbx =  param_init_gru( prefix='encoder',nin=self.hyperparameters["gru1_dim"]*2 + 128, dim=self.hyperparameters["gru2_dim"])
         self.fgrurecW1= theano.shared(fgrurecW1, name="fgrurecW1")
         self.fgrurecW2= theano.shared(fgrurecW2, name="fgrurecW2")
@@ -74,62 +72,60 @@ class CopyStmtRecurrentAttentionalModel(object):
         self.bgrurecbx = theano.shared(bgrurecbx, name="bgrurecbx")
 
 
-
-        gru_layerrec_bias = np.random.randn(self.hyperparameters["gru2_dim"] *2) * 10 ** self.hyperparameters["log_layer2_init_scale"]
+        gru_layerrec_bias = np.random.randn(self.hyperparameters["gru2_dim"] *2).astype('float32') * 10 ** self.hyperparameters["log_layer2_init_scale"]
         self.gru_layerrec_bias = theano.shared(gru_layerrec_bias, name="gru_layerrec_bias")
-
 
 
         # Probability that each token will be copied
         conv_layer3_code = np.random.randn(1, self.hyperparameters["gru2_dim"] *2,
-                                     self.hyperparameters["layer3_window_size"], 1) * 10 ** self.hyperparameters["log_layer3_init_scale"]
+                                     self.hyperparameters["layer3_window_size"], 1).astype('float32') * 10 ** self.hyperparameters["log_layer3_init_scale"]
         self.conv_layer3_copy_code = theano.shared(conv_layer3_code, name="conv_layer3_copy_code")
-        conv_layer3_bias = np.random.randn(1) * 10 ** self.hyperparameters["log_layer3_init_scale"]
+        conv_layer3_bias = np.random.randn(1).astype('float32') * 10 ** self.hyperparameters["log_layer3_init_scale"]
         self.conv_layer3_copy_bias = theano.shared(conv_layer3_bias[0], name="conv_layer3_copy_bias")
 
         # Probability that we do a copy
         conv_copy_code = np.random.randn(1, self.hyperparameters["gru2_dim"] *2,
-                                     self.hyperparameters["layer3_window_size"], 1) * 10 ** self.hyperparameters["log_copy_init_scale"]
+                                     self.hyperparameters["layer3_window_size"], 1).astype('float32') * 10 ** self.hyperparameters["log_copy_init_scale"]
         self.conv_copy_code = theano.shared(conv_copy_code, name="conv_copy_code")
-        conv_copy_bias = np.random.randn(1) * 10 ** self.hyperparameters["log_copy_init_scale"]
+        conv_copy_bias = np.random.randn(1).astype('float32') * 10 ** self.hyperparameters["log_copy_init_scale"]
         self.conv_copy_bias = theano.shared(conv_copy_bias[0], name="conv_copy_bias")
 
         # Attention vectors
         conv_layer3_att_code = np.random.randn(1, self.hyperparameters["gru2_dim"] *2,
-                                     self.hyperparameters["layer3_window_size"], 1) * 10 ** self.hyperparameters["log_layer3_init_scale"]
+                                     self.hyperparameters["layer3_window_size"], 1).astype('float32') * 10 ** self.hyperparameters["log_layer3_init_scale"]
         self.conv_layer3_att_code = theano.shared(conv_layer3_att_code, name="conv_layer3_att_code")
-        conv_layer3_att_bias = np.random.randn(1) * 10 ** self.hyperparameters["log_layer3_init_scale"]
+        conv_layer3_att_bias = np.random.randn(1).astype('float32') * 10 ** self.hyperparameters["log_layer3_init_scale"]
         self.conv_layer3_att_bias = theano.shared(conv_layer3_att_bias[0], name="conv_layer3_att_bias")
 
         # Recurrent layer
-        gru_prev_hidden_to_next = np.random.randn(self.hyperparameters["gru2_dim"] *2, self.hyperparameters["gru2_dim"] *2)\
+        gru_prev_hidden_to_next = np.random.randn(self.hyperparameters["gru2_dim"] *2, self.hyperparameters["gru2_dim"] *2).astype('float32')\
                                 * 10 ** self.hyperparameters["log_hidden_init_scale"]
         self.gru_prev_hidden_to_next = theano.shared(gru_prev_hidden_to_next, name="gru_prev_hidden_to_next")
-        gru_prev_hidden_to_reset = np.random.randn(self.hyperparameters["gru2_dim"] *2, self.hyperparameters["gru2_dim"] *2)\
+        gru_prev_hidden_to_reset = np.random.randn(self.hyperparameters["gru2_dim"] *2, self.hyperparameters["gru2_dim"] *2).astype('float32')\
                                 * 10 ** self.hyperparameters["log_hidden_init_scale"]
         self.gru_prev_hidden_to_reset = theano.shared(gru_prev_hidden_to_reset, name="gru_prev_hidden_to_reset")
-        gru_prev_hidden_to_update = np.random.randn(self.hyperparameters["gru2_dim"] *2, self.hyperparameters["gru2_dim"] *2)\
+        gru_prev_hidden_to_update = np.random.randn(self.hyperparameters["gru2_dim"] *2, self.hyperparameters["gru2_dim"] *2).astype('float32')\
                                 * 10 ** self.hyperparameters["log_hidden_init_scale"]
         self.gru_prev_hidden_to_update = theano.shared(gru_prev_hidden_to_update, name="gru_prev_hidden_to_update")
 
-        gru_prediction_to_reset = np.random.randn(self.D, self.hyperparameters["gru2_dim"] *2) * 10 ** self.hyperparameters["log_hidden_init_scale"]
+        gru_prediction_to_reset = np.random.randn(self.D, self.hyperparameters["gru2_dim"] *2).astype('float32') * 10 ** self.hyperparameters["log_hidden_init_scale"]
         self.gru_prediction_to_reset = theano.shared(gru_prediction_to_reset, name="gru_prediction_to_reset")
 
-        gru_prediction_to_update = np.random.randn(self.D, self.hyperparameters["gru2_dim"] *2) * 10 ** self.hyperparameters["log_hidden_init_scale"]
+        gru_prediction_to_update = np.random.randn(self.D, self.hyperparameters["gru2_dim"] *2).astype('float32') * 10 ** self.hyperparameters["log_hidden_init_scale"]
         self.gru_prediction_to_update = theano.shared(gru_prediction_to_update, name="gru_prediction_to_update")
 
-        gru_prediction_to_hidden = np.random.randn(self.D, self.hyperparameters["gru2_dim"] *2) * 10 ** self.hyperparameters["log_hidden_init_scale"]
+        gru_prediction_to_hidden = np.random.randn(self.D, self.hyperparameters["gru2_dim"] *2).astype('float32') * 10 ** self.hyperparameters["log_hidden_init_scale"]
         self.gru_prediction_to_hidden = theano.shared(gru_prediction_to_hidden, name="gru_prediction_to_hidden")
 
-        gru_hidden_update_bias = np.random.randn(self.hyperparameters["gru2_dim"] *2) * 10 ** self.hyperparameters["log_layer2_init_scale"]
+        gru_hidden_update_bias = np.random.randn(self.hyperparameters["gru2_dim"] *2).astype('float32') * 10 ** self.hyperparameters["log_layer2_init_scale"]
         self.gru_hidden_update_bias = theano.shared(gru_hidden_update_bias, name="gru_hidden_update_bias")
-        gru_update_bias = np.random.randn(self.hyperparameters["gru2_dim"] *2) * 10 ** self.hyperparameters["log_layer2_init_scale"]
+        gru_update_bias = np.random.randn(self.hyperparameters["gru2_dim"] *2).astype('float32') * 10 ** self.hyperparameters["log_layer2_init_scale"]
         self.gru_update_bias = theano.shared(gru_update_bias, name="gru_update_bias")
-        gru_reset_bias = np.random.randn(self.hyperparameters["gru2_dim"] *2) * 10 ** self.hyperparameters["log_layer2_init_scale"]
+        gru_reset_bias = np.random.randn(self.hyperparameters["gru2_dim"] *2).astype('float32') * 10 ** self.hyperparameters["log_layer2_init_scale"]
         self.gru_reset_bias = theano.shared(gru_reset_bias, name="gru_reset_bias")
 
-        h0 = np.random.randn(3* self.hyperparameters["gru1_dim"] *2, self.hyperparameters["gru2_dim"] *2) * 10 ** self.hyperparameters["log_layer2_init_scale"]
-        h0_bias = np.random.randn(1, self.hyperparameters["gru2_dim"] *2) * 10 ** self.hyperparameters["log_hidden_init_scale"]
+        h0 = np.random.randn(3* self.hyperparameters["gru1_dim"] *2, self.hyperparameters["gru2_dim"] *2).astype('float32') * 10 ** self.hyperparameters["log_layer2_init_scale"]
+        h0_bias = np.random.randn(1, self.hyperparameters["gru2_dim"] *2).astype('float32') * 10 ** self.hyperparameters["log_hidden_init_scale"]
         self.h0 = theano.shared(h0, name="h0")
         self.h0_bias = theano.shared(h0_bias, name="h0_bias")
 
@@ -208,24 +204,23 @@ class CopyStmtRecurrentAttentionalModel(object):
                     gru_prev_hidden_to_reset, gru_prev_hidden_to_next, gru_prev_hidden_to_update = \
                         self.gru_prediction_to_reset, self.gru_prediction_to_hidden, self.gru_prediction_to_update, \
                                  self.gru_prev_hidden_to_reset, self.gru_prev_hidden_to_next, self.gru_prev_hidden_to_update
-        
+                                 
         all_name_reps, h0 =  self.all_name_reps, self.h0
         gru_layer1_bias = self.gru_layer1_bias
         gru_layerrec_bias = self.gru_layerrec_bias  
 
-        
         def _step_Sens1(sen, all_name_reps, fgruW1,fgruW2,fgruU1,fgruU2,fgrub1,fgrub2,fgruWx,fgruUx,fgrubx,\
                                           bgruW1,bgruW2,bgruU1,bgruU2,  bgrub1, bgrub2,  bgruWx,  bgruUx,  bgrubx,\
                                                 gru_layer1_bias):
             code_embeddings = all_name_reps[sen]# SentSize x D
             
-            proj11, nsteps = gru_layer( fgruW1, fgruW2,  fgruU1,  fgruU2,  fgrub1, fgrub2,  fgruWx,  fgruUx,  fgrubx, 
+            proj11 = gru_layer( fgruW1, fgruW2,  fgruU1,  fgruU2,  fgrub1, fgrub2,  fgruWx,  fgruUx,  fgrubx, 
                                                 code_embeddings.dimshuffle(0, 1), None, 
                                                 prefix='encoder')
-            proj12, nsteps = gru_layer( bgruW1, bgruW2,  bgruU1,  bgruU2,  bgrub1, bgrub2,  bgruWx,  bgruUx,  bgrubx, 
+            proj12 = gru_layer( bgruW1, bgruW2,  bgruU1,  bgruU2,  bgrub1, bgrub2,  bgruWx,  bgruUx,  bgrubx, 
                                                 code_embeddings.dimshuffle(0, 1), None, 
                                                 prefix='encoder', mark = True)
-            l1_out = T.concatenate([proj11 ,proj12],axis=1).dimshuffle(0,1) +  gru_layer1_bias.dimshuffle('x', 0)
+            l1_out = T.concatenate([proj11, proj12], axis=1).dimshuffle(0,1) +  gru_layer1_bias.dimshuffle('x', 0)
 
             return l1_out, code_embeddings
             
@@ -243,18 +238,18 @@ class CopyStmtRecurrentAttentionalModel(object):
                                     strict=True)
 
         # PDG graph
-        l1_out_means =  T.concatenate([T.dot(graph[0],  l1_out_list[:, 0, :]),T.dot(graph[1],  l1_out_list[:, 0, :]),T.dot(graph[2], l1_out_list[:, 0, :])], axis = 1)
-        h0 = T.dot(T.mean(l1_out_means, axis = 0), h0).dimshuffle("x", 0) + self.h0_bias
-        def _step_Sens2(sen, l1_out, l1_out_mean, all_name_reps, 
+        l1_stmt_vecs =  T.concatenate([T.dot(graph[0],  l1_out_list[:, 0, :]),T.dot(graph[1],  l1_out_list[:, 0, :]),T.dot(graph[2], l1_out_list[:, 0, :])], axis = 1)
+        h0 = T.dot(T.mean(l1_stmt_vecs, axis = 0), h0).dimshuffle("x", 0) + self.h0_bias
+        def _step_Sens2(sen, l1_out, l1_stmt_vec, all_name_reps, 
                                                  fgrurecW1, fgrurecW2,  fgrurecU1,  fgrurecU2,  fgrurecb1, fgrurecb2,  fgrurecWx,  fgrurecUx,  fgrurecbx,\
                                                  bgrurecW1, bgrurecW2,  bgrurecU1,  bgrurecU2,  bgrurecb1, bgrurecb2,  bgrurecWx,  bgrurecUx,  bgrurecbx,\
                                                  gru_layerrec_bias):
             code_embeddings = all_name_reps[sen]
-            proj21_1, nsteps = gru_layer( fgrurecW1, fgrurecW2,  fgrurecU1,  fgrurecU2,  fgrurecb1, fgrurecb2,  fgrurecWx,  fgrurecUx,  fgrurecbx, 
-                                                T.concatenate([l1_out, code_embeddings],axis=1), l1_out_mean, 
+            proj21_1 = gru_layer( fgrurecW1, fgrurecW2,  fgrurecU1,  fgrurecU2,  fgrurecb1, fgrurecb2,  fgrurecWx,  fgrurecUx,  fgrurecbx, 
+                                                T.concatenate([l1_out, code_embeddings],axis=1), l1_stmt_vec, 
                                                 prefix='encoder')
-            proj22_1, nsteps = gru_layer( bgrurecW1, bgrurecW2,  bgrurecU1,  bgrurecU2,  bgrurecb1, bgrurecb2,  bgrurecWx,  bgrurecUx,  bgrurecbx, 
-                                                T.concatenate([l1_out, code_embeddings],axis=1) , l1_out_mean, 
+            proj22_1 = gru_layer( bgrurecW1, bgrurecW2,  bgrurecU1,  bgrurecU2,  bgrurecb1, bgrurecb2,  bgrurecWx,  bgrurecUx,  bgrurecbx, 
+                                                T.concatenate([l1_out, code_embeddings],axis=1) , l1_stmt_vec, 
                                                 prefix='encoder', mark = True)
             l2_out = T.concatenate([proj21_1 ,proj22_1],axis=1).dimshuffle(0,1) +  gru_layerrec_bias.dimshuffle('x', 0)
 
@@ -262,7 +257,7 @@ class CopyStmtRecurrentAttentionalModel(object):
 
         #l2_out = T.switch(l2_out>0, l2_out, 0.1 * l2_out)
     
-        seqs2 = [sentenceT, l1_out_list, l1_out_means]
+        seqs2 = [sentenceT, l1_out_list, l1_stmt_vecs]
         non_seqs2 = [all_name_reps, fgrurecW1,fgrurecW2, fgrurecU1, fgrurecU2, fgrurecb1,fgrurecb2, \
                                                  fgrurecWx, fgrurecUx, fgrurecbx, \
                                                  bgrurecW1,bgrurecW2, bgrurecU1, bgrurecU2, bgrurecb1,bgrurecb2, bgrurecWx, bgrurecUx, bgrurecbx, \
@@ -279,11 +274,11 @@ class CopyStmtRecurrentAttentionalModel(object):
 
 
         l2_out_con2 = l2_out_list.reshape((l2_out_list.shape[0] * l2_out_list.shape[1], l2_out_list.shape[2]))
-        padding2 = T.alloc(np.float(0), 6, self.D)
-        code_embeddings2 = code_embedding_list.reshape((code_embedding_list.shape[0]*code_embedding_list.shape[1], code_embedding_list.shape[2]))
-        code_embeddings = T.concatenate([padding2,code_embeddings2,padding2],axis = 0)
+        padding2 = T.alloc(np.float32(0), 6, self.D)
+        code_embeddings_short = code_embedding_list.reshape((code_embedding_list.shape[0]*code_embedding_list.shape[1], code_embedding_list.shape[2]))
+        code_embeddings = T.concatenate([padding2,code_embeddings_short,padding2],axis = 0)
         
-        padding = T.alloc(np.float(0), 6, self.hyperparameters["gru2_dim"] * 2)
+        padding = T.alloc(np.float32(0), 6, self.hyperparameters["gru2_dim"] * 2)
         l2_out_con = T.concatenate([padding, l2_out_con2, padding], axis = 0)
         l2_out = l2_out_con.dimshuffle("x", 1, 0, "x") 
 
@@ -363,18 +358,17 @@ class CopyStmtRecurrentAttentionalModel(object):
         name_log_probs = log_softmax(T.dot(predictions, T.transpose(self.all_name_reps[:-1])) + self.name_bias) # SxD, DxK -> SxK
 
 
-        return sentence, name_targets, copy_weights, attention_weights, copy_probs, name_log_probs, filtered_features,l1_out_means, sentenceT,
+        return sentence, name_targets, copy_weights, attention_weights, copy_probs, name_log_probs, filtered_features,l1_stmt_vecs, sentenceT,
 
     def model_objective(self, copy_probs, copy_weights, is_copy_matrix, name_log_probs, name_targets, targets_is_unk):
-        use_copy_prob = T.switch(T.sum(is_copy_matrix, axis=1) > 0, T.log(copy_probs) + T.log(T.sum(is_copy_matrix * copy_weights, axis=1)+10e-8), -1000)
-        use_model_prob = T.switch(targets_is_unk, -10, 0) + T.log(1. - copy_probs) + name_log_probs[T.arange(name_targets.shape[0]), name_targets]
+        use_copy_prob = T.switch(T.sum( T.cast(is_copy_matrix,theano.config.floatX), axis=1) > 0, T.log(copy_probs) + T.log(T.sum(T.mul( T.cast(is_copy_matrix,theano.config.floatX) , copy_weights), axis=1,dtype=theano.config.floatX)+np.float32(10e-8)), np.float32(-1000.))
+        use_model_prob = T.switch(targets_is_unk, np.float32(-10), np.float32(0)) + T.log(np.float32(1) - copy_probs) + name_log_probs[T.arange(name_targets.shape[0]), name_targets]
         correct_answer_log_prob = logsumexp(use_copy_prob, use_model_prob)
         return T.mean(correct_answer_log_prob)
 
     def __compile_model_functions(self):
-            grad_acc = [theano.shared(np.zeros(param.get_value().shape)) for param in self.train_parameters] \
-                        + [theano.shared(0, name="sentence_count")]
-
+            grad_acc = [theano.shared(np.zeros(param.get_value().shape, dtype=np.float32)) for param in self.train_parameters] \
+                        + [theano.shared(np.float32(0), name="sentence_count")]
             sentence = T.imatrix("sentence")
             graph = T.tensor3("graph")
             is_copy_matrix = T.imatrix("is_copy_matrix")
@@ -383,7 +377,7 @@ class CopyStmtRecurrentAttentionalModel(object):
 
             sentence.tag.test_value = np.asarray([np.arange(105).astype(np.int32)]).T
 
-            graph.tag.test_value = np.ones((3,1,1)).astype(np.int32)
+            graph.tag.test_value = np.ones((3,1,1)).astype(np.float32)
             
             name_targets.tag.test_value = np.arange(5).astype(np.int32)
             targets_is_unk.tag.test_value = np.array([0, 0, 1, 0, 0], dtype=np.int32)
@@ -406,15 +400,18 @@ class CopyStmtRecurrentAttentionalModel(object):
                                                    )
 
             normalized_grads = [T.switch(grad_acc[-1] >0, g / grad_acc[-1], g) for g in grad_acc[:-1]]
+
+                
             step_updates, ratios = nesterov_rmsprop_multiple(self.train_parameters, normalized_grads,
                                                     learning_rate=10 ** self.hyperparameters["log_learning_rate"],
                                                     rho=self.hyperparameters["rmsprop_rho"],
                                                     momentum=self.hyperparameters["momentum"],
                                                     grad_clip=self.hyperparameters["grad_clip"],
                                                     output_ratios=True)
-                                                    
-            step_updates.extend([(v, T.zeros(v.shape)) for v in grad_acc[:-1]])  # Set accumulators to 0
-            step_updates.append((grad_acc[-1], 0))
+                                    
+            step_updates.extend([(v, T.zeros(v.shape, dtype =  theano.config.floatX)) for v in grad_acc[:-1]])  # Set accumulators to 0
+            
+            step_updates.append((grad_acc[-1], np.float32(0)))
 
             self.grad_step = theano.function(inputs=[], updates=step_updates, outputs=ratios)
 
@@ -448,7 +445,7 @@ class CopyStmtRecurrentAttentionalModel(object):
         ll, count = 0, 0
         for i in xrange(len(name_targets)):
             shapek = graph[i].shape[1]
-            graphi = np.array([graph[i][:shapek,:], graph[i][shapek:2*shapek,:], graph[i][2*shapek:3*shapek,:]])
+            graphi = np.array([graph[i][:shapek,:], graph[i][shapek:2*shapek,:], graph[i][2*shapek:3*shapek,:]]).astype(np.float32)
             max_len = max([item.shape[0] for item in sentence[i]])
             batch_code_sentencesk = np.array([np.array([item for item in code_sen] + \
                                         [self.naming_data.all_tokens_dictionary.get_id_or_unk(self.NONE) \

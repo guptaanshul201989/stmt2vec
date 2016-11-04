@@ -58,7 +58,7 @@ class ConvolutionalCopyAttentionalRecurrentLearner:
                     batch_code_sentencesk = np.array([np.array([item for item in code_sen] + [self.naming_data.all_tokens_dictionary.get_id_or_unk(self.NONE) for ii in range(max_len - code_sen.shape[0])], dtype=np.int32) for code_sen in batch_code_sentences[k]])
                     if max_len > 80 or batch_code_sentencesk.shape[0] * batch_code_sentencesk.shape[1] > 3000: continue
                     shapek = batch_code_graph[k].shape[1]
-                    graphk = np.array([batch_code_graph[k][:shapek, :],batch_code_graph[k][shapek:2 * shapek, :],batch_code_graph[k][2 * shapek:3 * shapek, :]])
+                    graphk = np.array([batch_code_graph[k][:shapek, :],batch_code_graph[k][shapek:2 * shapek, :],batch_code_graph[k][2 * shapek:3 * shapek, :]]).astype(np.float32)
                     if batch_code_sentencesk.shape[1] != 1: batch_code_sentencesk = batch_code_sentencesk.T
                     if batch_code_sentencesk.shape[1] != graphk.shape[1]: batch_code_sentencesk = batch_code_sentencesk.T
                     
@@ -133,7 +133,7 @@ class ConvolutionalCopyAttentionalRecurrentLearner:
         for sen in code:
             code_sentence = [self.naming_data.all_tokens_dictionary.get_id_or_unk(t) for t in sen]
             code_sens.append(np.array(code_sentence, dtype=np.int32))
-        code_graph = np.array(code_graph, dtype=np.int32)
+        code_graph = np.array(code_graph, dtype=np.float32)
         
         shapek = code_graph.shape[1]
         code_graph = np.array([code_graph[:shapek, :], code_graph[shapek:2*shapek, :], code_graph[2*shapek:3*shapek, :]])
@@ -246,8 +246,8 @@ if __name__ == "__main__":
     max_num_epochs = 500
     params = {
         "D":128,        
-        "gru1_dim":32,
-        "gru2_dim": 192,
+        "gru1_dim":16,
+        "gru2_dim": 96,
         "layer3_window_size": 13,
         "log_name_rep_init_scale": -1,
         "log_layer1_init_scale": -3.68,

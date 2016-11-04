@@ -15,7 +15,7 @@ def ortho_weight(ndim):
     """
     W = numpy.random.randn(ndim, ndim)
     u, s, v = numpy.linalg.svd(W)
-    return u
+    return u.astype('float32')
 
 def norm_weight(nin,nout=None, scale=0.1, ortho=True):
     """
@@ -28,7 +28,7 @@ def norm_weight(nin,nout=None, scale=0.1, ortho=True):
         W = ortho_weight(nin)
     else:
         W = numpy.random.uniform(low=-scale, high=scale, size=(nin, nout))
-    return W
+    return W.astype('float32')
 
 def tanh(x):
     """
