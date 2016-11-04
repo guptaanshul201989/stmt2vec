@@ -1141,7 +1141,7 @@ namespace PDGGenerator
             popPDGStack(); // pop for-predicate
             popPDGStack(); // pop for-header
 
-
+            popLoopStack(forHeaderNode.ID, forExitNode.ID);
 
 
 
@@ -1201,6 +1201,8 @@ namespace PDGGenerator
             pdg.addNode(pNode);
             pdg.addNode(foreachBodyNode);
             pdg.addNode(foreachExitNode);
+
+            popLoopStack(foreachHeaderNode.ID, foreachExitNode.ID);
         }
         public override void VisitReturnStatement(ReturnStatementSyntax node)
         {
