@@ -238,13 +238,13 @@ class CopyStmtRecurrentAttentionalModel(object):
                                     strict=True)
 
         # PDG graph
-        l1_stmt_vecs =  T.concatenate([T.dot(graph[0],  l1_out_list[:, 0, :]),T.dot(graph[1],  l1_out_list[:, 0, :]),T.dot(graph[2], l1_out_list[:, 0, :])], axis = 1)
+        l1_stmt_vecs =  T.concatenate([T.dot(graph[0],  l1_out_list[:, 0, :]),T.dot(graph[0],  l1_out_list[:, 0, :]),T.dot(graph[0], l1_out_list[:, 0, :])], axis = 1)
         h0 = T.dot(T.mean(l1_stmt_vecs, axis = 0), h0).dimshuffle("x", 0) + self.h0_bias
-        def _step_Sens2(sen, l1_out, l1_stmt_vec, all_name_reps, 
+        
+        def _step_Sens2(l1_out, l1_stmt_vec, code_embeddings, 
                                                  fgrurecW1, fgrurecW2,  fgrurecU1,  fgrurecU2,  fgrurecb1, fgrurecb2,  fgrurecWx,  fgrurecUx,  fgrurecbx,\
                                                  bgrurecW1, bgrurecW2,  bgrurecU1,  bgrurecU2,  bgrurecb1, bgrurecb2,  bgrurecWx,  bgrurecUx,  bgrurecbx,\
                                                  gru_layerrec_bias):
-            code_embeddings = all_name_reps[sen]
             proj21_1 = gru_layer( fgrurecW1, fgrurecW2,  fgrurecU1,  fgrurecU2,  fgrurecb1, fgrurecb2,  fgrurecWx,  fgrurecUx,  fgrurecbx, 
                                                 T.concatenate([l1_out, code_embeddings],axis=1), l1_stmt_vec, 
                                                 prefix='encoder')
@@ -257,8 +257,8 @@ class CopyStmtRecurrentAttentionalModel(object):
 
         #l2_out = T.switch(l2_out>0, l2_out, 0.1 * l2_out)
     
-        seqs2 = [sentenceT, l1_out_list, l1_stmt_vecs]
-        non_seqs2 = [all_name_reps, fgrurecW1,fgrurecW2, fgrurecU1, fgrurecU2, fgrurecb1,fgrurecb2, \
+        seqs2 = [l1_out_list, l1_stmt_vecs, code_embedding_list]
+        non_seqs2 = [fgrurecW1,fgrurecW2, fgrurecU1, fgrurecU2, fgrurecb1,fgrurecb2, \
                                                  fgrurecWx, fgrurecUx, fgrurecbx, \
                                                  bgrurecW1,bgrurecW2, bgrurecU1, bgrurecU2, bgrurecb1,bgrurecb2, bgrurecWx, bgrurecUx, bgrurecbx, \
                                                  gru_layerrec_bias]
@@ -274,11 +274,11 @@ class CopyStmtRecurrentAttentionalModel(object):
 
 
         l2_out_con2 = l2_out_list.reshape((l2_out_list.shape[0] * l2_out_list.shape[1], l2_out_list.shape[2]))
-        padding2 = T.alloc(np.float32(0), 6, self.D)
+        padding2 = T.alloc(np.float32(0), (self.hyperparameters["layer3_window_size"]-1)/2, self.D)
         code_embeddings_short = code_embedding_list.reshape((code_embedding_list.shape[0]*code_embedding_list.shape[1], code_embedding_list.shape[2]))
         code_embeddings = T.concatenate([padding2,code_embeddings_short,padding2],axis = 0)
         
-        padding = T.alloc(np.float32(0), 6, self.hyperparameters["gru2_dim"] * 2)
+        padding = T.alloc(np.float32(0), (self.hyperparameters["layer3_window_size"]-1)/2, self.hyperparameters["gru2_dim"] * 2)
         l2_out_con = T.concatenate([padding, l2_out_con2, padding], axis = 0)
         l2_out = l2_out_con.dimshuffle("x", 1, 0, "x") 
 
@@ -300,7 +300,7 @@ class CopyStmtRecurrentAttentionalModel(object):
 
             l3_out = code_convolved_l3 + conv_att_layer3_bias
             code_toks_weights = T.nnet.softmax(l3_out)  # This should be one dimension (the size of the sentence)
-            predicted_embedding = T.tensordot(code_toks_weights, code_embeddings[6:-6], [[1], [0]])[0]
+            predicted_embedding = T.tensordot(code_toks_weights, code_embeddings[(self.hyperparameters["layer3_window_size"]-1)/2:-((self.hyperparameters["layer3_window_size"]-1)/2)], [[1], [0]])[0]
 
 
             # Copy Attention

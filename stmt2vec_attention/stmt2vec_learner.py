@@ -246,8 +246,8 @@ if __name__ == "__main__":
     max_num_epochs = 500
     params = {
         "D":128,        
-        "gru1_dim":16,
-        "gru2_dim": 96,
+        "gru1_dim":32,
+        "gru2_dim": 32*6,
         "layer3_window_size": 13,
         "log_name_rep_init_scale": -1,
         "log_layer1_init_scale": -3.68,
@@ -272,9 +272,9 @@ if __name__ == "__main__":
     if True:
         model = ConvolutionalCopyAttentionalRecurrentLearner(params)
         model.train(input_file, max_epochs=max_num_epochs)
-        model.save("copy_convolutional_att_rec_model" + os.path.basename(params["train_file"]) + ".pkl")
+        model.save("stmt2vec_convolutional_att_rec_model" + os.path.basename(params["train_file"]) + ".pkl")
 
-        model2 = ConvolutionalCopyAttentionalRecurrentLearner.load("copy_convolutional_att_rec_model" + os.path.basename(params["train_file"]) + ".pkl")
+        model2 = ConvolutionalCopyAttentionalRecurrentLearner.load("stmt2vec_convolutional_att_rec_model" + os.path.basename(params["train_file"]) + ".pkl")
 
         # save the results in these files
         result_file_allcases = open(params["test_file"][:-5] + "all.txt", "w")
